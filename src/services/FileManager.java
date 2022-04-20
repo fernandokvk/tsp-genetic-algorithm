@@ -6,10 +6,11 @@ import models.Problem;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Scanner;
 
 class Path {
-    public static final String TSP_FILES_FOLDER = "assets/tspfiles/";
+    public static final String TSP_FILES_FOLDER = "assets/tsp-files/";
     public static final String BEST_SOLUTIONS_FILE = "assets/bestSolutions.txt";
 }
 
@@ -25,7 +26,7 @@ public class FileManager {
     public Problem load() {
         String filepath = Path.TSP_FILES_FOLDER.concat(filename);
         ArrayList<String> header;
-        ArrayList<City> cities;
+        LinkedList<City> cities;
 
         try {
             File file = new File(filepath);
@@ -68,8 +69,8 @@ public class FileManager {
         return bestSolution;
     }
 
-    private ArrayList<City> readCities(){
-        ArrayList<City> cities = new ArrayList<>();
+    private LinkedList<City> readCities(){
+        LinkedList<City> cities = new LinkedList<>();
 
         while(scanner.hasNextInt()){
             int n, x, y;
@@ -84,7 +85,7 @@ public class FileManager {
     }
 
     private ArrayList<String> readHeader() {
-        ArrayList<String> header = new ArrayList<String>();
+        ArrayList<String> header = new ArrayList<>();
 
         for (int i = 0; i < 6; i++) {
             header.add(scanner.nextLine());

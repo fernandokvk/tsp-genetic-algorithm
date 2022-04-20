@@ -1,3 +1,4 @@
+import algorithms.ConstructiveAlgorithms;
 import models.Problem;
 import services.CompiledJar;
 import services.FileManager;
@@ -7,16 +8,19 @@ public class Main {
     public static void main(String[] args) {
 
         if (args.length != 0) {
-            compiledJarFile(args);
+            CompiledJar cj = new CompiledJar(args);
+            cj.readEntry();
         } else {
-            FileManager fm = new FileManager("att48.tsp");
+            FileManager fm = new FileManager("eil101.tsp");
             Problem p = fm.load();
-            System.out.println("ueba");
+            ConstructiveAlgorithms ca = new ConstructiveAlgorithms();
+            ca.farthestInsertion(p);
         }
     }
+/*DoubleSummaryStatistics dss = new DoubleSummaryStatistics();
+            for (Double d: solutions
+                 ) {
+                dss.accept(d);
+            }*/
 
-    private static void compiledJarFile(String[] s) {
-        CompiledJar cj = new CompiledJar(s);
-        cj.readEntry();
-    }
 }

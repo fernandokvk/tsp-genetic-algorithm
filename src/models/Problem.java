@@ -1,14 +1,19 @@
 package models;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class Problem {
-    private String name, comment, type, edgeWeighType;
-    private int size;
-    private double solution, bestSolution;
-    private ArrayList<City> cities, solutionPath;
+    private String name;
+    private String comment;
+    private String type;
+    private final String edgeWeighType;
+    private final int size;
+    private double solution;
+    private final double bestSolution;
+    private final LinkedList<City> cities;
+    private LinkedList<City> solutionPath;
 
-    public Problem(String name, String comment, String type, String edgeWeighType, int size, double bestSolution, ArrayList<City> cities) {
+    public Problem(String name, String comment, String type, String edgeWeighType, int size, double bestSolution, LinkedList<City> cities) {
         this.name = name;
         this.comment = comment;
         this.type = type;
@@ -16,6 +21,7 @@ public class Problem {
         this.size = size;
         this.bestSolution = bestSolution;
         this.cities = cities;
+        this.solutionPath = new LinkedList<>();
     }
 
     public String getName() {
@@ -42,21 +48,11 @@ public class Problem {
         this.type = type;
     }
 
-    public String getEdgeWeighType() {
-        return edgeWeighType;
-    }
-
-    public void setEdgeWeighType(String edgeWeighType) {
-        this.edgeWeighType = edgeWeighType;
-    }
-
     public int getSize() {
         return size;
     }
 
-    public void setSize(int size) {
-        this.size = size;
-    }
+
 
     public double getSolution() {
         return solution;
@@ -70,23 +66,17 @@ public class Problem {
         return bestSolution;
     }
 
-    public void setBestSolution(double bestSolution) {
-        this.bestSolution = bestSolution;
-    }
 
-    public ArrayList<City> getCities() {
+    public LinkedList<City> getCities() {
         return cities;
     }
 
-    public void setCities(ArrayList<City> cities) {
-        this.cities = cities;
-    }
 
-    public ArrayList<City> getSolutionPath() {
+    public LinkedList<City> getSolutionPath() {
         return solutionPath;
     }
 
-    public void setSolutionPath(ArrayList<City> solutionPath) {
+    public void setSolutionPath(LinkedList<City> solutionPath) {
         this.solutionPath = solutionPath;
     }
 }
