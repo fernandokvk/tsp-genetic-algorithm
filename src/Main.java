@@ -18,19 +18,19 @@ public class Main {
             CompiledJar cj = new CompiledJar(args);
             cj.readEntry();
         } else {
-            FileManager fm = new FileManager("pla7397.tsp");
+            FileManager fm = new FileManager("att48.tsp");
             Problem p = fm.load();
             ArrayList<Double> solutions  = new ArrayList<>(), improvedSolutions = new ArrayList<>();
             ArrayList<Long> timeMeasures = new ArrayList<>();
 
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 500; i++) {
                 Instant start = Instant.now();
                 ConstructiveAlgorithms ca = new ConstructiveAlgorithms();
                 ca.nearestNeighbor(p);
                 ImprovementAlgorithms ia = new ImprovementAlgorithms();
-                ia.opt2first(p);
+                ia.opt3first(p);
                 Instant end = Instant.now();
-                timeMeasures.add(Duration.between(start, end).toMillis()/1000);
+                timeMeasures.add(Duration.between(start, end).toMillis());
                 solutions.add(p.getSolution());
                 improvedSolutions.add(p.getImprovedSolution());
             }
