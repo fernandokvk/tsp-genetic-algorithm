@@ -1,6 +1,6 @@
 package models;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 public class Problem {
     private String name;
@@ -8,12 +8,11 @@ public class Problem {
     private String type;
     private final String edgeWeighType;
     private final int size;
-    private double solution;
+    private double solution, improvedSolution;
     private final double bestSolution;
-    private final LinkedList<City> cities;
-    private LinkedList<City> solutionPath;
+    private ArrayList<City> cities, solutionPath;
 
-    public Problem(String name, String comment, String type, String edgeWeighType, int size, double bestSolution, LinkedList<City> cities) {
+    public Problem(String name, String comment, String type, String edgeWeighType, int size, double bestSolution, ArrayList<City> cities) {
         this.name = name;
         this.comment = comment;
         this.type = type;
@@ -21,7 +20,16 @@ public class Problem {
         this.size = size;
         this.bestSolution = bestSolution;
         this.cities = cities;
-        this.solutionPath = new LinkedList<>();
+        this.solutionPath = new ArrayList<>();
+    }
+
+
+    public double getImprovedSolution() {
+        return improvedSolution;
+    }
+
+    public void setImprovedSolution(double improvedSolution) {
+        this.improvedSolution = improvedSolution;
     }
 
     public String getName() {
@@ -53,7 +61,6 @@ public class Problem {
     }
 
 
-
     public double getSolution() {
         return solution;
     }
@@ -67,16 +74,16 @@ public class Problem {
     }
 
 
-    public LinkedList<City> getCities() {
+    public ArrayList<City> getCities() {
         return cities;
     }
 
 
-    public LinkedList<City> getSolutionPath() {
+    public ArrayList<City> getSolutionPath() {
         return solutionPath;
     }
 
-    public void setSolutionPath(LinkedList<City> solutionPath) {
+    public void setSolutionPath(ArrayList<City> solutionPath) {
         this.solutionPath = solutionPath;
     }
 }

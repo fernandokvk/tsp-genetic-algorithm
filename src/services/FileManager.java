@@ -6,7 +6,6 @@ import models.Problem;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.Scanner;
 
 class Path {
@@ -26,7 +25,7 @@ public class FileManager {
     public Problem load() {
         String filepath = Path.TSP_FILES_FOLDER.concat(filename);
         ArrayList<String> header;
-        LinkedList<City> cities;
+        ArrayList<City> cities;
 
         try {
             File file = new File(filepath);
@@ -69,8 +68,8 @@ public class FileManager {
         return bestSolution;
     }
 
-    private LinkedList<City> readCities(){
-        LinkedList<City> cities = new LinkedList<>();
+    private ArrayList<City> readCities(){
+        ArrayList<City> cities = new ArrayList<>();
 
         while(scanner.hasNextInt()){
             int n, x, y;

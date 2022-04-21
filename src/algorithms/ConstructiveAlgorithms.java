@@ -3,13 +3,13 @@ package algorithms;
 import models.City;
 import models.Problem;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 public class ConstructiveAlgorithms {
 
     public void farthestInsertion(Problem p) {
-        p.setSolutionPath(new LinkedList<>());
-        LinkedList<City> availableCities = new LinkedList<>(p.getCities());
+        p.setSolutionPath(new ArrayList<>());
+        ArrayList<City> availableCities = new ArrayList<>(p.getCities());
         int initialSize = availableCities.size();
         initializeCycle(availableCities, p.getSolutionPath(), 3);
 
@@ -19,20 +19,20 @@ public class ConstructiveAlgorithms {
             p.getSolutionPath().add(insertAt, city_k);
             availableCities.remove(city_k);
         }
-        p.getSolutionPath().add(p.getSolutionPath().peekFirst());
+        p.getSolutionPath().add(p.getSolutionPath().get(0));
         p.setSolution(sumSolutionPath(p.getSolutionPath()));
     }
 
     public void nearestNeighbor(Problem p) {
-        p.setSolutionPath(new LinkedList<>());
-        LinkedList<City> availableCities = new LinkedList<>(p.getCities());
+        p.setSolutionPath(new ArrayList<>());
+        ArrayList<City> availableCities = new ArrayList<>(p.getCities());
 
         City firstCity = addRandomCity(availableCities, p.getSolutionPath());
         int initialSize = availableCities.size();
         availableCities.remove(firstCity);
 
         while (p.getSolutionPath().size() < initialSize) {
-            City city_k = findNearestNeighbor(p.getSolutionPath().getLast(), availableCities);
+            City city_k = findNearestNeighbor(p.getSolutionPath().get(p.getSolutionPath().size()-1), availableCities);
             p.getSolutionPath().add(city_k);
         }
 
@@ -40,7 +40,7 @@ public class ConstructiveAlgorithms {
         p.setSolution(sumSolutionPath(p.getSolutionPath()));
     }
 
-    private int findInsertIndex(City city_k, LinkedList<City> solutionPath) {
+    private int findInsertIndex(City city_k, ArrayList<City> solutionPath) {
         double minCost = Double.MAX_VALUE;
         int insertAt = -1;
 
@@ -60,7 +60,7 @@ public class ConstructiveAlgorithms {
         return insertAt;
     }
 
-    private City findFarthestToSolution(LinkedList<City> solutionPath, LinkedList<City> availableCities) {
+    private City findFarthestToSolution(ArrayList<City> solutionPath, ArrayList<City> availableCities) {
         double maxDistance = 0;
         int index = 0;
         int solutionPathSize = solutionPath.size();
@@ -78,7 +78,7 @@ public class ConstructiveAlgorithms {
         return availableCities.get(index);
     }
 
-    private void initializeCycle(LinkedList<City> availableCities, LinkedList<City> solutionPath, int initialCycleSize) {
+    private void initializeCycle(ArrayList<City> availableCities, ArrayList<City> solutionPath, int initialCycleSize) {
         City firstCity = addRandomCity(availableCities, solutionPath);
         availableCities.remove(firstCity);
         for (int i = 0; i < (initialCycleSize - 1); i++) {
@@ -91,7 +91,7 @@ public class ConstructiveAlgorithms {
         }
     }
 
-    private double sumSolutionPath(LinkedList<City> solutionPath) {
+    private double sumSolutionPath(ArrayList<City> solutionPath) {
         double sum = 0;
 
         for (int i = 0; i < solutionPath.size() - 1; i++) {
@@ -100,7 +100,7 @@ public class ConstructiveAlgorithms {
         return sum;
     }
 
-    private City findNearestNeighbor(City city, LinkedList<City> availableCities) {
+    private City findNearestNeighbor(City city, ArrayList<City> availableCities) {
         double minDist = Double.MAX_VALUE;
         int minDistIndex = 0;
 
@@ -125,7 +125,7 @@ public class ConstructiveAlgorithms {
         return dist;
     }
 
-    private City addRandomCity(LinkedList<City> availableCities, LinkedList<City> solutionPath) {
+    private City addRandomCity(ArrayList<City> availableCities, ArrayList<City> solutionPath) {
         boolean added = false;
         City addedCity = null;
         while (!added) {
