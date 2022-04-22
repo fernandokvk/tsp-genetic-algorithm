@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class ConstructiveAlgorithms {
 
-    public void farthestInsertion(Problem p) {
+    public ArrayList<City> farthestInsertion(Problem p) {
         p.setSolutionPath(new ArrayList<>());
         ArrayList<City> availableCities = new ArrayList<>(p.getCities());
         int initialSize = availableCities.size();
@@ -21,9 +21,10 @@ public class ConstructiveAlgorithms {
         }
         p.getSolutionPath().add(p.getSolutionPath().get(0));
         p.setSolution(sumSolutionPath(p.getSolutionPath()));
+        return p.getSolutionPath();
     }
 
-    public void nearestNeighbor(Problem p) {
+    public ArrayList<City> nearestNeighbor(Problem p) {
         p.setSolutionPath(new ArrayList<>());
         ArrayList<City> availableCities = new ArrayList<>(p.getCities());
 
@@ -38,6 +39,7 @@ public class ConstructiveAlgorithms {
 
         p.getSolutionPath().add(firstCity);
         p.setSolution(sumSolutionPath(p.getSolutionPath()));
+        return p.getSolutionPath();
     }
 
     private int findInsertIndex(City city_k, ArrayList<City> solutionPath) {

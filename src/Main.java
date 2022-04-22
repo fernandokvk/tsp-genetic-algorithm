@@ -1,4 +1,6 @@
 import algorithms.ConstructiveAlgorithms;
+import geneticAlgorithm.GeneticAlgorithm;
+import geneticAlgorithm.GeneticAlgorithmConfig;
 import algorithms.ImprovementAlgorithms;
 import models.Problem;
 import services.CompiledJar;
@@ -18,47 +20,49 @@ public class Main {
             CompiledJar cj = new CompiledJar(args);
             cj.readEntry();
         } else {
-            FileManager fm = new FileManager("att48.tsp");
+            FileManager fm = new FileManager("rat575.tsp");
             Problem p = fm.load();
-            ArrayList<Double> solutions  = new ArrayList<>(), improvedSolutions = new ArrayList<>();
-            ArrayList<Long> timeMeasures = new ArrayList<>();
+            GeneticAlgorithmConfig gac = new GeneticAlgorithmConfig(100);
+            GeneticAlgorithm ga = new GeneticAlgorithm(gac, p);
+            ga.run();
 
-            for (int i = 0; i < 500; i++) {
-                Instant start = Instant.now();
-                ConstructiveAlgorithms ca = new ConstructiveAlgorithms();
-                ca.nearestNeighbor(p);
-                ImprovementAlgorithms ia = new ImprovementAlgorithms();
-                ia.opt3first(p);
-                Instant end = Instant.now();
-                timeMeasures.add(Duration.between(start, end).toMillis());
-                solutions.add(p.getSolution());
-                improvedSolutions.add(p.getImprovedSolution());
-            }
-
-            DoubleSummaryStatistics solutionsStats = new DoubleSummaryStatistics();
-            DoubleSummaryStatistics improvedSolutionsStats = new DoubleSummaryStatistics();
-            LongSummaryStatistics timeStats = new LongSummaryStatistics();
-
-            for (Double d: solutions
-                 ) {
-                solutionsStats.accept(d);
-            }
-            for (Double d: improvedSolutions){
-                improvedSolutionsStats.accept(d);
-            }
-            for (Long l: timeMeasures){
-                timeStats.accept(l);
-            }
-
-            System.out.println(solutionsStats);
-            System.out.println(improvedSolutionsStats);
-            System.out.println(timeStats);
         }
     }
-/*DoubleSummaryStatistics dss = new DoubleSummaryStatistics();
-            for (Double d: solutions
-                 ) {
-                dss.accept(d);
-            }*/
+
+    public static void printStats(Problem p){
+        ArrayList<Double> solutions  = new ArrayList<>(), improvedSolutions = new ArrayList<>();
+        ArrayList<Long> timeMeasures = new ArrayList<>();
+
+        for (int i = 0; i < 500; i++) {
+            Instant start = Instant.now();
+            ConstructiveAlgorithms ca = new ConstructiveAlgorithms();
+            ca.farthestInsertion(p);
+            ImprovementAlgorithms ia = new ImprovementAlgorithms();
+            ia.opt2first(p);
+            Instant end = Instant.now();
+            timeMeasures.add(Duration.between(start, end).toMillis());
+            solutions.add(p.getSolution());
+            improvedSolutions.add(p.getImprovedSolution());
+        }
+
+        DoubleSummaryStatistics solutionsStats = new DoubleSummaryStatistics();
+        DoubleSummaryStatistics improvedSolutionsStats = new DoubleSummaryStatistics();
+        LongSummaryStatistics timeStats = new LongSummaryStatistics();
+
+        for (Double d: solutions
+        ) {
+            solutionsStats.accept(d);
+        }
+        for (Double d: improvedSolutions){
+            improvedSolutionsStats.accept(d);
+        }
+        for (Long l: timeMeasures){
+            timeStats.accept(l);
+        }
+
+        System.out.println(solutionsStats);
+        System.out.println(improvedSolutionsStats);
+        System.out.println(timeStats);
+    }
 
 }
