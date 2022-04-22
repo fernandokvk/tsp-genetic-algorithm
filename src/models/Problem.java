@@ -7,7 +7,7 @@ public class Problem {
     private String comment;
     private String type;
     private final String edgeWeighType;
-    private final int size;
+    private int size;
     private double solution, improvedSolution;
     private final double bestSolution;
     private ArrayList<City> cities, solutionPath;
@@ -23,6 +23,9 @@ public class Problem {
         this.solutionPath = new ArrayList<>();
     }
 
+    public void setSize(int size) {
+        this.size = size;
+    }
 
     public double getImprovedSolution() {
         return improvedSolution;

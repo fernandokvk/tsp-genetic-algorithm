@@ -1,9 +1,15 @@
 package models;
 
-public class City {
+public class City implements Comparable<City>{
     private final int n;
     private final int x;
     private final int y;
+
+    public City() {
+        this.n = -1;
+        this.x = -1;
+        this.y = -1;
+    }
 
     public City(int n, int x, int y) {
         this.n = n;
@@ -23,4 +29,8 @@ public class City {
         return y;
     }
 
+    @Override
+    public int compareTo(City o) {
+        return Integer.compare(this.n, o.n);
+    }
 }

@@ -2,10 +2,11 @@ package algorithms;
 
 import models.City;
 import models.Problem;
+import services.Util;
 
 import java.util.ArrayList;
 
-public class ConstructiveAlgorithms {
+public class ConstructiveAlgorithms extends Util {
 
     public ArrayList<City> farthestInsertion(Problem p) {
         p.setSolutionPath(new ArrayList<>());
@@ -19,7 +20,6 @@ public class ConstructiveAlgorithms {
             p.getSolutionPath().add(insertAt, city_k);
             availableCities.remove(city_k);
         }
-        p.getSolutionPath().add(p.getSolutionPath().get(0));
         p.setSolution(sumSolutionPath(p.getSolutionPath()));
         return p.getSolutionPath();
     }
@@ -37,7 +37,6 @@ public class ConstructiveAlgorithms {
             p.getSolutionPath().add(city_k);
         }
 
-        p.getSolutionPath().add(firstCity);
         p.setSolution(sumSolutionPath(p.getSolutionPath()));
         return p.getSolutionPath();
     }
@@ -93,14 +92,7 @@ public class ConstructiveAlgorithms {
         }
     }
 
-    private double sumSolutionPath(ArrayList<City> solutionPath) {
-        double sum = 0;
 
-        for (int i = 0; i < solutionPath.size() - 1; i++) {
-            sum += getDistance(solutionPath.get(i), solutionPath.get(i + 1));
-        }
-        return sum;
-    }
 
     private City findNearestNeighbor(City city, ArrayList<City> availableCities) {
         double minDist = Double.MAX_VALUE;
@@ -119,13 +111,6 @@ public class ConstructiveAlgorithms {
         return city_k;
     }
 
-    private double getDistance(City a, City b) {
-        double dist, difX, difY;
-        difX = a.getX() - b.getX();
-        difY = a.getY() - b.getY();
-        dist = Math.sqrt(Math.pow(difX, 2) + Math.pow(difY, 2));
-        return dist;
-    }
 
     private City addRandomCity(ArrayList<City> availableCities, ArrayList<City> solutionPath) {
         boolean added = false;
