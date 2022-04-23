@@ -2,9 +2,12 @@ package geneticAlgorithm;
 
 import models.City;
 import models.Problem;
+import services.FileManager;
 import services.ProblemManager;
 import services.Util;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 
 
@@ -35,20 +38,29 @@ public class GeneticAlgorithm extends Util {
     }
 
     public void run(){
-
+        ArrayList<Long> timestampsMilliseconds = new ArrayList<>(gac.totalIterations);
+        ArrayList<Long> solutions = new ArrayList<>(gac.totalIterations);
         generateInitialPopulation();
 
         for (int i = 0; i < gac.totalIterations; i++) {
             double gap = ((population.get(0).solution - problem.getBestSolution()) / problem.getBestSolution()) * 100;
             System.out.printf("%.2f - Generation: %d - Gap: %.2f%% \n", population.get(0).solution, i + 1, gap);
-            evaluation();       //OK
-            selection();        //OK
-            crossover();
-            mutation();         //+-
-            localSearch();      //OK
-            update();
-        }
+            Instant start = Instant.now();
 
+            evaluation();
+            selection();
+            crossover();
+            mutation();
+            localSearch();
+            update();
+
+            Instant end = Instant.now();
+            timestampsMilliseconds.add(Duration.between(start, end).toMillis());
+            solutions.add(Math.round(population.get(0).solution));
+        }
+        ArrayList<City> path = population.get(0).solutionPath;
+        FileManager fm = new FileManager();
+        fm.outputToFile(problem, gac, timestampsMilliseconds, solutions, path);
     }
 
     private void generateInitialPopulation() {

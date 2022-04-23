@@ -7,12 +7,6 @@ import geneticAlgorithm.SelectionCriteria;
 import services.CompiledJar;
 import services.ProblemManager;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.DoubleSummaryStatistics;
-import java.util.LongSummaryStatistics;
-
 public class Main {
 
     public static void main(String[] args){
@@ -22,11 +16,11 @@ public class Main {
             CompiledJar cj = new CompiledJar(args);
             cj.readEntry();
         } else {
-            ProblemManager pm = new ProblemManager("eil101.tsp");
+            ProblemManager pm = new ProblemManager("att48.tsp");
             GeneticAlgorithmConfig config = new GeneticAlgorithmConfig(
-                    5000,
-                    150,
-                    RecombinationOperator.POS,
+                    10000,
+                    10,
+                    RecombinationOperator.OX1,
                     5,
                     Builders.NEAREST_NEIGHBOR);
             pm.runGenetic(config);
@@ -35,42 +29,7 @@ public class Main {
     }
 
     public static void printStats(String filename, int runs, Builders constructiveAlgorithm, Improvers improvementAlgorithm) {
-        ArrayList<Double> solutions = new ArrayList<>(), improvedSolutions = new ArrayList<>();
-        ArrayList<Long> timeMeasures = new ArrayList<>();
 
-        ProblemManager pm = new ProblemManager();
-        pm.load(filename);
-
-        for (int i = 0; i < runs; i++) {
-            Instant start = Instant.now();
-
-            pm.buildSolution(constructiveAlgorithm);
-            pm.improveSolution(improvementAlgorithm);
-
-            Instant end = Instant.now();
-
-            timeMeasures.add(Duration.between(start, end).toMillis());
-            solutions.add(pm.getProblem().getSolution());
-            improvedSolutions.add(pm.getProblem().getImprovedSolution());
-        }
-
-        DoubleSummaryStatistics solutionsStats = new DoubleSummaryStatistics();
-        DoubleSummaryStatistics improvedSolutionsStats = new DoubleSummaryStatistics();
-        LongSummaryStatistics timeStats = new LongSummaryStatistics();
-
-        for (Double d : solutions) {
-            solutionsStats.accept(d);
-        }
-        for (Double d : improvedSolutions) {
-            improvedSolutionsStats.accept(d);
-        }
-        for (Long l : timeMeasures) {
-            timeStats.accept(l);
-        }
-
-        System.out.println(solutionsStats);
-        System.out.println(improvedSolutionsStats);
-        System.out.println(timeStats);
     }
 
     public static void savedConfigs() {
