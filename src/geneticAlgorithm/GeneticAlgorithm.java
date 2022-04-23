@@ -16,10 +16,7 @@ import models.Problem;
 import services.ProblemManager;
 import services.Util;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 
 public class GeneticAlgorithm extends Util {
@@ -54,7 +51,7 @@ public class GeneticAlgorithm extends Util {
 
         for (int i = 0; i < gac.totalIterations; i++) {
             double gap = ((population.get(0).solution - problem.getBestSolution()) / problem.getBestSolution()) * 100;
-            System.out.printf("%.2f - Generation: %d - Gap: %.2f%% \n", population.get(0).solution, i+1, gap);
+            System.out.printf("%.2f - Generation: %d - Gap: %.2f%% \n", population.get(0).solution, i + 1, gap);
             evaluation();
             selection();
             crossover();
@@ -169,15 +166,55 @@ public class GeneticAlgorithm extends Util {
             case PMX:
                 crossoverPMX();
                 break;
-            case CX:
-                break;
             case OX1:
-                break;
-            case OX2:
+                crossoverOX1();
                 break;
             case POS:
+                crossoverPOS();
                 break;
         }
+    }
+
+    private void crossoverOX1() {
+        while (offsprings.size() < gac.populationSize) {
+            Chromosome offspringA = new Chromosome(new ArrayList<>());
+            Chromosome offspringB = new Chromosome(new ArrayList<>());
+
+            for (int i = 0; i < problem.getSize(); i++) {
+                offspringA.solutionPath.add(i, new City());
+                offspringB.solutionPath.add(i, new City());
+            }
+
+            int indexJ = (int) Math.round(Math.random() * (problem.getSize() - 2)) + 1; // indexJ cannot be first city, so (-1), must be inside bounds, so (-2)
+            int indexI = (int) Math.round((Math.random() * (indexJ - 1)));
+
+            for (int i = indexI; i < (indexJ + 1); i++) {
+                offspringA.solutionPath.set(i, parents.get(1).solutionPath.get(i));
+                offspringB.solutionPath.set(i, parents.get(0).solutionPath.get(i));
+            }
+            int elementsLeft = (problem.getSize() - 1) - (indexJ - indexI);
+
+            for (int i = (indexJ + 1); i < (indexJ + elementsLeft + 1); i++) {
+                City c = parents.get(1).solutionPath.get(i % problem.getSize());
+                if (!offspringA.solutionPath.subList(indexI, indexJ).contains(c)) {
+                    offspringA.solutionPath.set((i % problem.getSize()), c);
+                }
+            }
+
+            for (int i = (indexJ + 1); i < (indexJ + elementsLeft + 1); i++) {
+                City c = parents.get(0).solutionPath.get(i % problem.getSize());
+                if (!offspringB.solutionPath.subList(indexI, indexJ).contains(c)) {
+                    offspringB.solutionPath.set((i % problem.getSize()), c);
+                }
+            }
+            offspringA.solution = sumSolutionPath(offspringA.solutionPath);
+            offspringB.solution = sumSolutionPath(offspringB.solutionPath);
+
+            offsprings.add(offspringA);
+            offsprings.add(offspringB);
+
+        }
+
     }
 
     private void crossoverPMX() {
@@ -217,6 +254,34 @@ public class GeneticAlgorithm extends Util {
 
     }
 
+    private void crossoverPOS() {
+
+        while (offsprings.size() < gac.populationSize) {
+            int numberOfSwaps = (int) (Math.ceil(Math.random() * (problem.getSize() - 1)));
+            HashSet<Integer> swapPositions = new HashSet<>(numberOfSwaps);
+            while (swapPositions.size() < numberOfSwaps) {
+                int swapPosition = (int) (Math.round((Math.random() * (problem.getSize() - 1))));
+                swapPositions.add(swapPosition);
+            }
+
+            ArrayList<City> parentA = parents.get(0).solutionPath;
+            ArrayList<City> parentB = parents.get(1).solutionPath;
+            Chromosome offspringA = new Chromosome(parentA);
+            Chromosome offspringB = new Chromosome(parentB);
+
+            for (Integer i : swapPositions) {
+                offspringA.solutionPath.set(i, parentB.get(i));
+                offspringA.solutionPath.set(parentA.indexOf(offspringA.solutionPath.get(i)), parentA.get(i));
+
+                offspringB.solutionPath.set(i, parentA.get(i));
+                offspringB.solutionPath.set(parentB.indexOf(offspringB.solutionPath.get(i)), parentB.get(i));
+            }
+
+            offsprings.add(offspringA);
+            offsprings.add(offspringB);
+        }
+    }
+
     private void sortMappedElements(Chromosome offspring, Chromosome parent, Map<City, City> mapping, int indexI, int indexJ) {
         for (int i = 0; i < problem.getSize() - 1; i++) {
             if (i < indexI || i > indexJ) {
@@ -245,8 +310,11 @@ public class GeneticAlgorithm extends Util {
     private void mutation() {
         int mutationRate = gac.mutationRate;
         for (int i = 0; i < gac.populationSize; i++) {
-            int random = ((int) Math.round(Math.random() * 100)) +1;
-            if (random <= mutationRate) mutate(population.get(i));
+            int random = ((int) Math.round(Math.random() * 100)) + 1;
+            if (random <= mutationRate) {
+                mutate(population.get(i));
+                mutate(offsprings.get(i));
+            }
         }
     }
 
@@ -254,7 +322,7 @@ public class GeneticAlgorithm extends Util {
 
         int j = (int) Math.round(Math.random() * (problem.getSize() - 2)) + 1;
         int i = (int) Math.round((Math.random() * (j - 1)));
-        Collections.reverse(c.solutionPath.subList(i, j+1));
+        Collections.reverse(c.solutionPath.subList(i, j + 1));
 
 
     }
@@ -312,6 +380,7 @@ public class GeneticAlgorithm extends Util {
             if (i < oldPopulationSize) newPopulation.add(population.get(i));
             else newPopulation.add(offsprings.get(i));
         }
+        population = newPopulation;
     }
 
     private void updateSteadyStated() {
