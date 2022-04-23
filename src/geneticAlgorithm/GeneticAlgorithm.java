@@ -11,7 +11,6 @@ package geneticAlgorithm;
 
  */
 
-import algorithms.ImprovementAlgorithms;
 import models.City;
 import models.Problem;
 import services.ProblemManager;
@@ -54,7 +53,8 @@ public class GeneticAlgorithm extends Util {
         generateInitialPopulation();
 
         for (int i = 0; i < gac.totalIterations; i++) {
-            System.out.printf("%.2f - Generation: %d  \n", population.get(0).solution, i);
+            double gap = ((population.get(0).solution - problem.getBestSolution()) / problem.getBestSolution()) * 100;
+            System.out.printf("%.2f - Generation: %d - Gap: %.2f%% \n", population.get(0).solution, i+1, gap);
             evaluation();
             selection();
             crossover();
@@ -182,7 +182,7 @@ public class GeneticAlgorithm extends Util {
 
     private void crossoverPMX() {
 
-        while (offsprings.size() < gac.populationSize){
+        while (offsprings.size() < gac.populationSize) {
             Chromosome offspringA = new Chromosome(new ArrayList<>());
             Chromosome offspringB = new Chromosome(new ArrayList<>());
             Map<City, City> mappingA = new HashMap<>();
@@ -244,36 +244,36 @@ public class GeneticAlgorithm extends Util {
      */
     private void mutation() {
         int mutationRate = gac.mutationRate;
-
         for (int i = 0; i < gac.populationSize; i++) {
-            int random = (int) Math.round(Math.random() * 100);
-            if (random < mutationRate) mutate(population.get(i));
+            int random = ((int) Math.round(Math.random() * 100)) +1;
+            if (random <= mutationRate) mutate(population.get(i));
         }
     }
 
     private void mutate(Chromosome c) {
-        int mutationIndex = (int) Math.round(Math.random() * (problem.getSize() - 3)) + 1;
 
-        City aux = c.solutionPath.get(mutationIndex);
-        c.solutionPath.set(mutationIndex, c.solutionPath.get(mutationIndex+1));
-        c.solutionPath.set(mutationIndex+1, aux);
-        c.solution = sumSolutionPath(c.solutionPath);
+        int j = (int) Math.round(Math.random() * (problem.getSize() - 2)) + 1;
+        int i = (int) Math.round((Math.random() * (j - 1)));
+        Collections.reverse(c.solutionPath.subList(i, j+1));
+
+
     }
 
     /**
      * Busca local na população
      */
     private void localSearch() {
-        ImprovementAlgorithms ia = new ImprovementAlgorithms();
-        if (gac.populationCriteria == PopulationCriteria.POPULATIONAL){
+        ProblemManager pm = new ProblemManager();
+
+        if (gac.populationCriteria == PopulationCriteria.POPULATIONAL) {
             for (int i = 0; i < gac.populationSize; i++) {
-                offsprings.get(i).solutionPath = ia.opt2first(offsprings.get(i).solutionPath);
+                offsprings.get(i).solutionPath = pm.switchImprover(offsprings.get(i).solutionPath, gac.improvementAlgorithm);
             }
         } else {
             //STEADY-STATED OR ELITISM
             for (int i = 0; i < gac.populationSize; i++) {
-                offsprings.get(i).solutionPath = ia.opt2first(offsprings.get(i).solutionPath);
-                population.get(i).solutionPath = ia.opt2first(population.get(i).solutionPath);
+                offsprings.get(i).solutionPath = pm.switchImprover(offsprings.get(i).solutionPath, gac.improvementAlgorithm);
+                population.get(i).solutionPath = pm.switchImprover(population.get(i).solutionPath, gac.improvementAlgorithm);
             }
         }
     }
@@ -282,7 +282,7 @@ public class GeneticAlgorithm extends Util {
      * Atualizar a população
      */
     private void update() {
-        switch(gac.populationCriteria){
+        switch (gac.populationCriteria) {
             case POPULATIONAL:
                 updatePopulational();
                 break;
@@ -295,18 +295,18 @@ public class GeneticAlgorithm extends Util {
         }
     }
 
-    private void updatePopulational(){
+    private void updatePopulational() {
         population = offsprings;
         Collections.sort(offsprings);
     }
 
-    private void updateElitism(){
+    private void updateElitism() {
         Collections.sort(population);
         Collections.sort(offsprings);
         ArrayList<Chromosome> newPopulation = new ArrayList<>();
         double elitismPercent = gac.elitismPercent;
         elitismPercent /= 100;
-        int oldPopulationSize = (int)Math.round(gac.populationSize * elitismPercent);
+        int oldPopulationSize = (int) Math.round(gac.populationSize * elitismPercent);
 
         for (int i = 0; i < gac.populationSize; i++) {
             if (i < oldPopulationSize) newPopulation.add(population.get(i));
@@ -314,17 +314,17 @@ public class GeneticAlgorithm extends Util {
         }
     }
 
-    private void updateSteadyStated(){
+    private void updateSteadyStated() {
         Collections.sort(offsprings);
         Collections.sort(population);
         ArrayList<Chromosome> newPopulation = new ArrayList<>();
         int i = 0;
         int j = 0;
-        while (newPopulation.size() < gac.populationSize){
+        while (newPopulation.size() < gac.populationSize) {
             Chromosome offspring = offsprings.get(i);
             Chromosome old = population.get(j);
 
-            if (offspring.solution < old.solution){
+            if (offspring.solution < old.solution) {
                 newPopulation.add(offspring);
                 i++;
             } else {

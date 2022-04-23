@@ -1,7 +1,6 @@
 package algorithms;
 
 import models.City;
-import models.Problem;
 import services.Util;
 
 import java.util.ArrayList;
@@ -37,14 +36,13 @@ public class ImprovementAlgorithms extends Util {
         return solutionPath;
     }
 
-    public void opt3first(Problem p) {
-        ArrayList<City> solutionPath = new ArrayList<>(p.getSolutionPath());
-        p.setImprovedSolution(p.getSolution());
+    public ArrayList<City> opt3first(ArrayList<City> solutionPath) {
         boolean canImprove = true;
         int solutionPathSize = solutionPath.size(); // Assigning value now so we don't have to evaluate every loop
+        double originalSolution = sumSolutionPath(solutionPath);
 
         while (canImprove) {
-            double originalSolution = p.getImprovedSolution();
+            double improvedSolution = originalSolution;
 
             for (int i = 1; i < solutionPathSize - 2; i++) {
                 for (int j = i + 1; j < solutionPathSize - 1; j++) {
@@ -60,12 +58,9 @@ public class ImprovementAlgorithms extends Util {
                 }
 
             }
-            if (originalSolution == p.getImprovedSolution()) canImprove = false;
-            p.setImprovedSolution(originalSolution);
-
+            if (originalSolution == improvedSolution) canImprove = false;
         }
-
-        p.setSolutionPath(solutionPath);
+        return solutionPath;
     }
 
     private double opt3Swap(ArrayList<City> solutionPath, double originalSolution, int i, int j, int k) {

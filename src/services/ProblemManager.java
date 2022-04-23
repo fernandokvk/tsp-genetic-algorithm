@@ -15,6 +15,13 @@ public class ProblemManager extends Util {
 
     Problem problem;
 
+    public ProblemManager() {
+    }
+
+    public ProblemManager(String filename) {
+        load(filename);
+    }
+
     public ArrayList<City> buildSolution(Problem problem, Builders constructiveAlgorithm) {
         ConstructiveAlgorithms ca = new ConstructiveAlgorithms();
 
@@ -59,7 +66,9 @@ public class ProblemManager extends Util {
             case OPT2_FIRST_IMPROVEMENT:
                 return ia.opt2first(solutionPath);
             case OPT3_FIRST_IMPROVEMENT:
-                break;
+                return ia.opt3first(solutionPath);
+            case NONE:
+                return solutionPath;
         }
         return solutionPath;
     }
@@ -73,8 +82,7 @@ public class ProblemManager extends Util {
         return problem;
     }
 
-    public void runGenetic(String filename, GeneticAlgorithmConfig gac){
-        load(filename);
+    public void runGenetic(GeneticAlgorithmConfig gac){
         GeneticAlgorithm ga = new GeneticAlgorithm(gac, problem);
         ga.run();
     }
