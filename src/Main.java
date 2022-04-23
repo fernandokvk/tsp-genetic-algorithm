@@ -15,29 +15,20 @@ import java.util.LongSummaryStatistics;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args){
 //        printStats("att48.tsp", 500, Builders.NEAREST_NEIGHBOR, Improvers.OPT2_FIRST_IMPROVEMENT);
-        //EAX > ER > OX1
 
-        // Fix sortings when not needed (solution when criteria == populational; offspring.sublist when elitism)
-        // Fix rankings
-        // Fix mutation when not needed
-        // Fix PMX
         if (args.length != 0) {
             CompiledJar cj = new CompiledJar(args);
             cj.readEntry();
         } else {
-            ProblemManager pm = new ProblemManager("kroC100.tsp");
+            ProblemManager pm = new ProblemManager("eil101.tsp");
             GeneticAlgorithmConfig config = new GeneticAlgorithmConfig(
-                    100,
-                    10000,
-                    SelectionCriteria.TOURNAMENT,
-                    PopulationCriteria.STEADY_STATED,
-                    50,
-                    RecombinationOperator.OX1,
-                    1,
-                    Builders.NEAREST_NEIGHBOR,
-                    Improvers.OPT2_FIRST_IMPROVEMENT);
+                    5000,
+                    150,
+                    RecombinationOperator.POS,
+                    5,
+                    Builders.NEAREST_NEIGHBOR);
             pm.runGenetic(config);
         }
         System.out.println("Main.main");

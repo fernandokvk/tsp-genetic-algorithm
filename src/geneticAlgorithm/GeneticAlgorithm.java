@@ -1,16 +1,5 @@
 package geneticAlgorithm;
 
-/*
-    Cromossomo: um indivíduo (solução)
-    Gene: um elemento do cromossomo
-    População: um conjunto de cromossomos
-    Operadores genéticos:
-        Seleção: selecionar os cromossomos (pais) para a reprodução;
-        Reprodução (crossover): executar uma combinação (cruzamento) dos cromossomos pais para gerar novos cromossomos filhos
-        Mutação: é uma modificação arbitrária de uma parte (pequena) do cromossomo.
-
- */
-
 import models.City;
 import models.Problem;
 import services.ProblemManager;
@@ -45,33 +34,37 @@ public class GeneticAlgorithm extends Util {
         this.problem = problem;
     }
 
-    public void run() {
+    public void run(){
 
         generateInitialPopulation();
 
         for (int i = 0; i < gac.totalIterations; i++) {
             double gap = ((population.get(0).solution - problem.getBestSolution()) / problem.getBestSolution()) * 100;
             System.out.printf("%.2f - Generation: %d - Gap: %.2f%% \n", population.get(0).solution, i + 1, gap);
-            evaluation();
-            selection();
+            evaluation();       //OK
+            selection();        //OK
             crossover();
-            mutation();
-            localSearch();
+            mutation();         //+-
+            localSearch();      //OK
             update();
         }
-        Collections.sort(population);
-        System.out.println("GeneticAlgorithm.run");
-
 
     }
 
     private void generateInitialPopulation() {
         ProblemManager pm = new ProblemManager();
-
+        double oldPercent = 0;
+        double percent;
+        System.out.println("Building solutions:");
         for (int i = 0; i < gac.populationSize; i++) {
+            percent = i;
+            percent = ((percent + 1) / gac.populationSize) * 100;
+            if (Math.round(percent) > Math.round(oldPercent) && Math.round(percent) % 10 == 0) System.out.printf("%02d%% ", Math.round(percent));
             ArrayList<City> solutionPath = pm.buildSolution(problem, gac.constructiveAlgorithm);
             population.add(new Chromosome(solutionPath));
+            oldPercent = percent;
         }
+        System.out.println("\nRunning genetic algorithm:");
     }
 
     /**
@@ -98,26 +91,6 @@ public class GeneticAlgorithm extends Util {
                 selectionTournament();
                 break;
         }
-    }
-
-    private void selectionTournament() {
-
-        for (int i = 0; i < 2; i++) {
-            ArrayList<Chromosome> tournament = new ArrayList<>(gac.tournamentSize);
-            int index = (int) Math.round(Math.random() * (gac.populationSize - 1));
-            for (int j = 0; j < gac.tournamentSize; j++) {
-                tournament.add(population.get(index % gac.populationSize));
-                index++;
-            }
-            Chromosome c = Collections.min(tournament);
-            parents.add(c);
-        }
-    }
-
-    private void selectionRanking() {
-        Collections.sort(population);
-        parents.add(population.get(0));
-        parents.add(population.get(1));
     }
 
     private void selectionRoulette() {
@@ -147,7 +120,7 @@ public class GeneticAlgorithm extends Util {
             cumulativeValues.add(i, cumulativeValue);
         }
 
-        // Adding 2 parents randomly, we don't remove the 1st parent, so it can happen that it is the same
+        // Adding 2 parents randomly, we don't remove the 1st parent, so it can happen that one is chosen twice
         for (int i = 0; i < 2; i++) {
             double random = Math.random();
             int j = 0;
@@ -158,19 +131,65 @@ public class GeneticAlgorithm extends Util {
         }
     }
 
+    private void selectionRanking() {
+        Collections.sort(population);
+        ArrayList<Integer> ranks = new ArrayList<>(gac.populationSize);
+        ArrayList<Integer> cumulativeRanks = new ArrayList<>(gac.populationSize);
+
+        //Generating the ranks
+        for (int i = 0; i < gac.populationSize; i++) {
+            ranks.add(gac.populationSize - i);
+        }
+
+        //Generating the cumulative ranks array. Could be done in one array, but for clarity this is better.
+        cumulativeRanks.add(ranks.get(0));
+        for (int i = 1; i < gac.populationSize; i++) {
+            cumulativeRanks.add(cumulativeRanks.get(i - 1) + ranks.get(i));
+        }
+
+        // Adding 2 parents randomly, we don't remove the 1st parent, so it can happen that one is chosen twice
+        for (int i = 0; i < 2; i++) {
+            double random = Math.random() * Collections.max(cumulativeRanks);
+            int j = 0;
+            while (cumulativeRanks.get(j) < random) {
+                j++;
+            }
+            parents.add(population.get(j));
+        }
+
+    }
+
+    private void selectionTournament() {
+
+        for (int i = 0; i < 2; i++) {
+            ArrayList<Chromosome> tournament = new ArrayList<>(gac.tournamentSize);
+            HashSet<Integer> participantsIndex = new HashSet<>(gac.tournamentSize);
+
+            while (participantsIndex.size() < gac.tournamentSize) {
+                int index = (int) Math.round(Math.random() * (gac.populationSize - 1));
+                participantsIndex.add(index);
+            }
+            for (Integer j : participantsIndex) {
+                tournament.add(population.get(j));
+            }
+            Chromosome champion = Collections.min(tournament);
+            parents.add(champion);
+        }
+    }
+
     /**
      * Executa o cruzamento dos reprodutores
      */
     private void crossover() {
         switch (gac.recombinationOperator) {
-            case PMX:
-                crossoverPMX();
-                break;
             case OX1:
                 crossoverOX1();
                 break;
             case POS:
                 crossoverPOS();
+                break;
+            case PMX:
+                crossoverPMX();
                 break;
         }
     }
@@ -217,6 +236,34 @@ public class GeneticAlgorithm extends Util {
 
     }
 
+    private void crossoverPOS() {
+
+        while (offsprings.size() < gac.populationSize) {
+            int numberOfSwaps = (int) (Math.ceil(Math.random() * (problem.getSize() - 1)));
+            HashSet<Integer> swapPositions = new HashSet<>(numberOfSwaps);
+            while (swapPositions.size() < numberOfSwaps) {
+                int swapPosition = (int) (Math.round((Math.random() * (problem.getSize() - 1))));
+                swapPositions.add(swapPosition);
+            }
+
+            ArrayList<City> parentA = parents.get(0).solutionPath;
+            ArrayList<City> parentB = parents.get(1).solutionPath;
+            Chromosome offspringA = new Chromosome(parentA);
+            Chromosome offspringB = new Chromosome(parentB);
+
+            for (Integer i : swapPositions) {
+                offspringA.solutionPath.set(i, parentB.get(i));
+                offspringA.solutionPath.set(parentA.indexOf(offspringA.solutionPath.get(i)), parentA.get(i));
+
+                offspringB.solutionPath.set(i, parentA.get(i));
+                offspringB.solutionPath.set(parentB.indexOf(offspringB.solutionPath.get(i)), parentB.get(i));
+            }
+
+            offsprings.add(offspringA);
+            offsprings.add(offspringB);
+        }
+    }
+
     private void crossoverPMX() {
 
         while (offsprings.size() < gac.populationSize) {
@@ -254,34 +301,6 @@ public class GeneticAlgorithm extends Util {
 
     }
 
-    private void crossoverPOS() {
-
-        while (offsprings.size() < gac.populationSize) {
-            int numberOfSwaps = (int) (Math.ceil(Math.random() * (problem.getSize() - 1)));
-            HashSet<Integer> swapPositions = new HashSet<>(numberOfSwaps);
-            while (swapPositions.size() < numberOfSwaps) {
-                int swapPosition = (int) (Math.round((Math.random() * (problem.getSize() - 1))));
-                swapPositions.add(swapPosition);
-            }
-
-            ArrayList<City> parentA = parents.get(0).solutionPath;
-            ArrayList<City> parentB = parents.get(1).solutionPath;
-            Chromosome offspringA = new Chromosome(parentA);
-            Chromosome offspringB = new Chromosome(parentB);
-
-            for (Integer i : swapPositions) {
-                offspringA.solutionPath.set(i, parentB.get(i));
-                offspringA.solutionPath.set(parentA.indexOf(offspringA.solutionPath.get(i)), parentA.get(i));
-
-                offspringB.solutionPath.set(i, parentA.get(i));
-                offspringB.solutionPath.set(parentB.indexOf(offspringB.solutionPath.get(i)), parentB.get(i));
-            }
-
-            offsprings.add(offspringA);
-            offsprings.add(offspringB);
-        }
-    }
-
     private void sortMappedElements(Chromosome offspring, Chromosome parent, Map<City, City> mapping, int indexI, int indexJ) {
         for (int i = 0; i < problem.getSize() - 1; i++) {
             if (i < indexI || i > indexJ) {
@@ -305,7 +324,7 @@ public class GeneticAlgorithm extends Util {
     }
 
     /**
-     * Gerar mutações da população
+     * Gerar mutações na população
      */
     private void mutation() {
         int mutationRate = gac.mutationRate;
@@ -403,6 +422,5 @@ public class GeneticAlgorithm extends Util {
         }
         population = newPopulation;
     }
-
 
 }

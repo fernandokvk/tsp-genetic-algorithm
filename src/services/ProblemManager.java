@@ -9,6 +9,7 @@ import geneticAlgorithm.GeneticAlgorithmConfig;
 import models.City;
 import models.Problem;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class ProblemManager extends Util {

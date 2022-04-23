@@ -7,12 +7,12 @@ import enums.Improvers;
 public class GeneticAlgorithmConfig {
     public final int populationSize;                                                     //OK
     public final int totalIterations;                                                    //OK
-    public SelectionCriteria selectionCriteria = SelectionCriteria.RANKING;              //OK
+    public SelectionCriteria selectionCriteria = SelectionCriteria.ROULETTE;              //OK
     public final int tournamentSize = 4;                                                 //OK
-    public PopulationCriteria populationCriteria = PopulationCriteria.POPULATIONAL;      //OK
-    public int elitismPercent = 10;                                                      //OK
-    public RecombinationOperator recombinationOperator = RecombinationOperator.PMX;      //OK
-    public int mutationRate = 5;                                                         //OK
+    public PopulationCriteria populationCriteria = PopulationCriteria.STEADY_STATED;      //OK
+    public int elitismPercent = 25;                                                      //OK
+    public RecombinationOperator recombinationOperator = RecombinationOperator.OX1;      //OK
+    public int mutationRate = 1;                                                         //OK
     public Builders constructiveAlgorithm = Builders.NEAREST_NEIGHBOR;            //OK
     public Improvers improvementAlgorithm = Improvers.OPT2_FIRST_IMPROVEMENT;     //OK
 
@@ -42,5 +42,13 @@ public class GeneticAlgorithmConfig {
         this.mutationRate = mutationRate;
         this.constructiveAlgorithm = constructiveAlgorithm;
         this.improvementAlgorithm = improvementAlgorithm;
+    }
+
+    public GeneticAlgorithmConfig(int populationSize, int totalIterations, RecombinationOperator recombinationOperator, int mutationRate, Builders constructiveAlgorithm) {
+        this.populationSize = populationSize;
+        this.totalIterations = totalIterations;
+        this.recombinationOperator = recombinationOperator;
+        this.mutationRate = mutationRate;
+        this.constructiveAlgorithm = constructiveAlgorithm;
     }
 }
