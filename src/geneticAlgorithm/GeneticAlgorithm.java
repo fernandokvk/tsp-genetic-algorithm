@@ -19,11 +19,11 @@ public class GeneticAlgorithm extends Util {
     ArrayList<Chromosome> offsprings = new ArrayList<>();
     Chromosome currentBestSolution;
 
-    private static class Chromosome implements Comparable<Chromosome> {
+    public static class Chromosome implements Comparable<Chromosome> {
         public ArrayList<City> solutionPath;
         public double solution;
 
-        public Chromosome(Chromosome chromosome){
+        public Chromosome(Chromosome chromosome) {
             this.solution = chromosome.solution;
             this.solutionPath = chromosome.solutionPath;
         }
@@ -43,7 +43,7 @@ public class GeneticAlgorithm extends Util {
         this.problem = problem;
     }
 
-    public void run() {
+    public void run() throws InterruptedException {
         ArrayList<Long> timestampsMilliseconds = new ArrayList<>(gac.totalIterations);
         ArrayList<Long> solutions = new ArrayList<>(gac.totalIterations);
         generateInitialPopulation();
@@ -64,7 +64,8 @@ public class GeneticAlgorithm extends Util {
             Instant end = Instant.now();
             timestampsMilliseconds.add(Duration.between(start, end).toMillis());
             solutions.add(Math.round(population.get(0).solution));
-            if (population.get(0).solution < currentBestSolution.solution) currentBestSolution = new Chromosome(population.get(0));
+            if (population.get(0).solution < currentBestSolution.solution)
+                currentBestSolution = new Chromosome(population.get(0));
         }
         FileManager fm = new FileManager();
         fm.outputToFile(problem, gac, timestampsMilliseconds, solutions, currentBestSolution.solutionPath, currentBestSolution.solution);
@@ -252,13 +253,8 @@ public class GeneticAlgorithm extends Util {
                 offspringB.solutionPath.set((i % problem.getSize()), c);
             }
         }
-        offspringA.solution = sumSolutionPath(offspringA.solutionPath);
-        offspringB.solution = sumSolutionPath(offspringB.solutionPath);
-
         offsprings.add(offspringA);
         offsprings.add(offspringB);
-
-
     }
 
     private void crossoverPOS() {
@@ -282,7 +278,6 @@ public class GeneticAlgorithm extends Util {
             offspringB.solutionPath.set(i, parentA.get(i));
             offspringB.solutionPath.set(parentB.indexOf(offspringB.solutionPath.get(i)), parentB.get(i));
         }
-
         offsprings.add(offspringA);
         offsprings.add(offspringB);
     }
@@ -309,17 +304,10 @@ public class GeneticAlgorithm extends Util {
             mappingA.put(parents.get(1).solutionPath.get(i), parents.get(0).solutionPath.get(i));
             mappingB.put(parents.get(0).solutionPath.get(i), parents.get(1).solutionPath.get(i));
         }
-
         sortMappedElements(offspringA, parents.get(0), mappingA, indexI, indexJ);
         sortMappedElements(offspringB, parents.get(1), mappingB, indexI, indexJ);
-
-        offspringA.solution = sumSolutionPath(offspringA.solutionPath);
-        offspringB.solution = sumSolutionPath(offspringB.solutionPath);
-
         offsprings.add(offspringA);
         offsprings.add(offspringB);
-
-
     }
 
     private void sortMappedElements(Chromosome offspring, Chromosome parent, Map<City, City> mapping, int indexI, int indexJ) {
@@ -370,26 +358,92 @@ public class GeneticAlgorithm extends Util {
     /**
      * Busca local na população
      */
-    private void localSearch() {
+    private void localSearch() throws InterruptedException {
         ProblemManager pm = new ProblemManager();
 
-        if (gac.populationCriteria == PopulationCriteria.POPULATIONAL) {
-            for (int i = 0; i < gac.populationSize; i++) {
-                offsprings.get(i).solutionPath = pm.switchImprover(offsprings.get(i).solutionPath, gac.improvementAlgorithm);
-            }
-        } else {
-            //STEADY-STATED OR ELITISM
-            for (int i = 0; i < gac.populationSize; i++) {
-                offsprings.get(i).solutionPath = pm.switchImprover(offsprings.get(i).solutionPath, gac.improvementAlgorithm);
-                population.get(i).solutionPath = pm.switchImprover(population.get(i).solutionPath, gac.improvementAlgorithm);
+        if (gac.threads >= 1) multiThreadLocalSearch();
+        else {
+            if (gac.populationCriteria == PopulationCriteria.POPULATIONAL) {
+                for (int i = 0; i < gac.populationSize; i++) {
+                    offsprings.get(i).solutionPath = pm.switchImprover(offsprings.get(i).solutionPath, gac.improvementAlgorithm);
+                }
+            } else {
+                //STEADY-STATED OR ELITISM
+                for (int i = 0; i < gac.populationSize; i++) {
+                    offsprings.get(i).solutionPath = pm.switchImprover(offsprings.get(i).solutionPath, gac.improvementAlgorithm);
+                    population.get(i).solutionPath = pm.switchImprover(population.get(i).solutionPath, gac.improvementAlgorithm);
+                }
             }
         }
+    }
+
+    private synchronized void multiThreadLocalSearch() throws InterruptedException {
+        int chromosomesPerThread = gac.populationSize / gac.threads;
+        ArrayList<Integer> chromosomeIndexAllocation = new ArrayList<>(gac.threads + 1);
+        ProblemManager pm = new ProblemManager();
+
+        chromosomeIndexAllocation.add(0);
+        chromosomeIndexAllocation.add(chromosomesPerThread);
+        for (int i = 2; i < gac.threads + 1; i++) {
+            chromosomeIndexAllocation.add(chromosomeIndexAllocation.get(i - 1) + chromosomesPerThread);
+        }
+
+        ArrayList<Thread> threads = new ArrayList<>();
+        for (int i = 0; i < gac.threads; i++) {
+            int lowerbound = chromosomeIndexAllocation.get(i);
+            int upperbound = chromosomeIndexAllocation.get(i + 1);
+
+            Thread t = new Thread(() -> {
+                for (int j = lowerbound; j < upperbound; j++) {
+                    offsprings.get(j).solutionPath = pm.switchImprover(offsprings.get(j).solutionPath, gac.improvementAlgorithm);
+                }
+
+            });
+            threads.add(t);
+            t.start();
+        }
+        for (Thread t: threads){
+            t.join();
+        }
+
+        threads.clear();
+
+        if (gac.populationCriteria != PopulationCriteria.POPULATIONAL){
+            for (int i = 0; i < gac.threads; i++) {
+                int lowerbound = chromosomeIndexAllocation.get(i);
+                int upperbound = chromosomeIndexAllocation.get(i + 1);
+
+                Thread t = new Thread(() -> {
+                    for (int j = lowerbound; j < upperbound; j++) {
+                        population.get(j).solutionPath = pm.switchImprover(population.get(j).solutionPath, gac.improvementAlgorithm);
+                    }
+                });
+                threads.add(t);
+                t.start();
+            }
+            for (Thread t: threads){
+                t.join();
+            }
+        }
+
     }
 
     /**
      * Atualizar a população
      */
     private void update() {
+
+        for (int i = 0; i < gac.populationSize; i++) {
+            Chromosome ch = offsprings.get(i);
+            ch.solution = sumSolutionPath(ch.solutionPath);
+        }
+        if (gac.populationCriteria != PopulationCriteria.POPULATIONAL) {
+            for (int i = 0; i < gac.populationSize; i++) {
+                Chromosome ch = population.get(i);
+                ch.solution = sumSolutionPath(ch.solutionPath);
+            }
+        }
+
         switch (gac.populationCriteria) {
             case POPULATIONAL:
                 updatePopulational();

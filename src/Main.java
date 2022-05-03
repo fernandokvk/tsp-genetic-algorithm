@@ -5,33 +5,24 @@ import geneticAlgorithm.PopulationCriteria;
 import geneticAlgorithm.RecombinationOperator;
 import geneticAlgorithm.SelectionCriteria;
 import services.CompiledJar;
-import services.ProblemManager;
 
 public class Main {
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws InterruptedException {
 
-        /*
-        - [ ]  Implementar multithread
-        - [X]  Corrigir seleção de pais
-        - [X]  Imprimir melhor solução
-        - [ ]  Relatório
-         */
+        CompiledJar cj = new CompiledJar(args);
+        cj.readEntry();
 
-        //Guardar a melhor solução e imprimir ela
-        if (args.length != 0) {
-            CompiledJar cj = new CompiledJar(args);
-            cj.readEntry();
-        } else {
-            ProblemManager pm = new ProblemManager("att48.tsp");
-            GeneticAlgorithmConfig config = new GeneticAlgorithmConfig(
-                    1000,
-                    500,
-                    RecombinationOperator.OX1,
-                    5,
-                    Builders.NEAREST_NEIGHBOR);
-            pm.runGenetic(config);
-        }
+      /*  ProblemManager pm = new ProblemManager("att48.tsp");
+        GeneticAlgorithmConfig config = new GeneticAlgorithmConfig(
+                1000,
+                10000,
+                RecombinationOperator.OX1,
+                5,
+                Builders.NEAREST_NEIGHBOR,
+                12);
+        pm.runGenetic(config);*/
+
     }
 
     public static void savedConfigs() {

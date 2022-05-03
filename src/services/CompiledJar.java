@@ -1,47 +1,64 @@
 package services;
 
-import models.Problem;
-
-import java.util.HashSet;
+import enums.Builders;
+import geneticAlgorithm.GeneticAlgorithmConfig;
+import geneticAlgorithm.RecombinationOperator;
 
 public class CompiledJar {
     private String[] args;
-    private HashSet<String> legalParameters;
     private boolean legalArguments = false;
+    private int populationSize;
+    private int totalIterations;
+    private RecombinationOperator recombinationOperator = RecombinationOperator.OX1;
+    private int mutationRate = 5;
+    private Builders builders = Builders.NEAREST_NEIGHBOR;
+    private int threads = 1;
+    private String filename;
+    private final String divider = "-------------------------------------";
+
 
     public CompiledJar(String[] args) {
         this.args = args;
-        addLegalParameters();
     }
 
-    public void readEntry(){
+    public void readEntry() throws InterruptedException {
         parseArguments();
-        if (legalArguments){
-            Problem problem = new FileManager(args[0]).load();
-            System.out.println(problem.getName());
+        if (legalArguments) {
+            ProblemManager pm = new ProblemManager(this.filename);
+            System.out.println(divider);
+            System.out.println("Parâmetros: "+ this.filename+" "+this.populationSize+" "+this.totalIterations+" "+this.recombinationOperator.toString()+" "+this.mutationRate+" "+this.threads);
+            GeneticAlgorithmConfig config = new GeneticAlgorithmConfig(
+                    this.populationSize,
+                    this.totalIterations,
+                    this.recombinationOperator,
+                    this.mutationRate,
+                    this.builders,
+                    this.threads
+            );
+            pm.runGenetic(config);
         }
     }
 
-    private void parseArguments(){
-        if (args.length != 3) {
+    private void parseArguments() {
+        if (args.length < 3) {
             if (args.length == 1 && args[0].equals("-h")) {
                 System.out.println("Sintaxe:");
-                System.out.println("<nome> <builder> <improver>");
+                System.out.println("Operadores disponíveis: OX1, POS, PMX");
+                System.out.println("<arquivo> <tamanho-da-populacao> <num-iteracoes> <operador-crossover> <taxa-mutação> <num-threads> ");
                 System.out.println("Exemplos:");
-                System.out.println("eil101 FARTHEST_INSERTION OPT3_FIRST_IMPROVEMENT");
-                System.out.println("att48 NEAREST_NEIGHBOR OPT2_FIRST_IMPROVEMENT");
-                System.out.println("a280 CLOSEST_INSERTION OPT2_BEST_IMPROVEMENT");
-                System.out.println("Sintaxe abreviada:");
-                System.out.println("eil101 -fi -opt3fi");
-                System.out.println("att48 -nn -opt2fi");
-                System.out.println("a280 -ci -opt2bi");
-            } else if (args.length == 1 && args[0].equals("-a")){
-                System.out.println("Diretório de problemas/casos: \"tsp\":");
-                System.out.println("\t<diretorio-atual>/tsp/");
+                System.out.println("eil101.tsp 1000 5000 OX1 5 1");
+                System.out.println("att48.tsp 5000 1000 OX1 5 5");
+                System.out.println("a280.tsp 200 2000 OX1 5 5");
+                System.out.println("Se preferir, é possível omitir os argumentos: <operador-crossover> <taxa-mutação> <num-threads>");
+                System.out.println("Que assumem os valores padrões: OX1, 5, 1");
+                System.out.println("Os parâmetros não acessíveis aqui, como: critério de seleção, critério de atualização, % de elitismo, tamanho do torneio, e outros");
+                System.out.println("Estão disponíveis na execução a partir do código somente (por enquanto)");
+            } else if (args.length == 1 && args[0].equals("-a")) {
+                System.out.println("Diretório de problemas/casos: assets/tsp-files/");
                 System.out.println("\tDevem ter extensão <.tsp>");
-                System.out.println("Exemplo de um arquivo válido: <diretorio-atual>/tsp/eil101.tsp");
+                System.out.println("Exemplo de um arquivo válido: assets/tsp-files/eil101.tsp");
                 System.out.println("Ao criar o seu próprio arquivo, é necessário inserir solução ótima no arquivo");
-                System.out.println("\"bestSolutions.txt\", no diretório atual");
+                System.out.println("\"bestSolutions.txt\", no mesmo diretório");
                 System.out.println("Deve seguir a sintaxe do arquivo:");
                 System.out.println("eil101 : 629");
             } else {
@@ -50,45 +67,20 @@ public class CompiledJar {
                 System.out.println("-a para ajuda com arquivos");
             }
         } else {
-            switch (args[1]) {
-                case "-fi":
-                    args[1] = "FARTHEST_INSERTION";
-                    break;
-                case "-nn":
-                    args[1] = "NEAREST_NEIGHBOR";
-                    break;
-                case "-ci":
-                    args[1] = "CLOSEST_INSERTION";
-                    break;
+            if (args.length >= 4) {
+                this.recombinationOperator = RecombinationOperator.valueOf(args[3].toUpperCase());
+                legalArguments = true;
             }
-            switch (args[2]) {
-                case "-opt2fi":
-                    args[2] = "OPT2_FIRST_IMPROVEMENT";
-                    break;
-                case "-opt2bi":
-                    args[2] = "OPT2_BEST_IMPROVEMENT";
-                    break;
-                case "-opt3fi":
-                    args[2] = "OPT3_FIRST_IMPROVEMENT";
-                    break;
+            if (args.length >= 5) {
+                this.mutationRate = Integer.parseInt(args[4]);
             }
+            if (args.length >= 6) {
+                this.threads = Integer.parseInt(args[5]);
+            }
+            this.filename = args[0];
+            this.populationSize = Integer.parseInt(args[1]);
+            this.totalIterations = Integer.parseInt(args[2]);
             legalArguments = true;
         }
-    }
-
-    private void addLegalParameters(){
-        legalParameters = new HashSet<>();
-        legalParameters.add("-fi");
-        legalParameters.add("-nn");
-        legalParameters.add("-ci");
-        legalParameters.add("-opt3fi");
-        legalParameters.add("-opt2fi");
-        legalParameters.add("-opt2bi");
-        legalParameters.add("FARTHEST_INSERTION");
-        legalParameters.add("CLOSEST_INSERTION");
-        legalParameters.add("NEAREST_NEIGHBOR");
-        legalParameters.add("OPT2_FIRST_IMPROVEMENT");
-        legalParameters.add("OPT3_FIRST_IMPROVEMENT");
-        legalParameters.add("OPT2_BEST_IMPROVEMENT");
     }
 }

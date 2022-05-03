@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public abstract class Util {
 
-    public double sumSolutionPath(ArrayList<City> solutionPath) {
+    public static double sumSolutionPath(ArrayList<City> solutionPath) {
         double sum = 0;
 
         for (int i = 0; i < solutionPath.size() - 1; i++) {
@@ -16,7 +16,7 @@ public abstract class Util {
         return sum;
     }
 
-    public double getDistance(City a, City b) {
+    public static double getDistance(City a, City b) {
         double dist, difX, difY;
         difX = a.getX() - b.getX();
         difY = a.getY() - b.getY();

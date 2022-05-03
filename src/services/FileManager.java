@@ -168,7 +168,8 @@ public class FileManager {
             fileStream.printf("Fastest iteration: %dms %s | %ds %n", timeStats.getMin(), "\t", timeStats.getMin() / 1000);
             fileStream.printf("Avg. iteration: %.2fms %s | %.2fs %n", timeStats.getAverage(), "\t", timeStats.getAverage() / 1000);
             fileStream.println(divider);
-            fileStream.printf("Total time elapsed: %ds %s | %.2fmin", timeStats.getSum() / 1000, "\t", ((double) timeStats.getSum()) / (1000 * 60));
+            fileStream.printf("Total time elapsed: %ds %s | %.2fmin%n", timeStats.getSum() / 1000, "\t", ((double) timeStats.getSum()) / (1000 * 60));
+            fileStream.printf("Threads used: %d", gac.threads);
             fileStream.close();
         } catch (Exception e) {
             e.printStackTrace();
