@@ -10,26 +10,28 @@ import services.ProblemManager;
 public class Main {
 
     public static void main(String[] args){
-//        printStats("att48.tsp", 500, Builders.NEAREST_NEIGHBOR, Improvers.OPT2_FIRST_IMPROVEMENT);
 
+        /*
+        - [ ]  Implementar multithread
+        - [X]  Corrigir seleção de pais
+        - [X]  Imprimir melhor solução
+        - [ ]  Relatório
+         */
+
+        //Guardar a melhor solução e imprimir ela
         if (args.length != 0) {
             CompiledJar cj = new CompiledJar(args);
             cj.readEntry();
         } else {
             ProblemManager pm = new ProblemManager("att48.tsp");
             GeneticAlgorithmConfig config = new GeneticAlgorithmConfig(
-                    10000,
-                    10,
+                    1000,
+                    500,
                     RecombinationOperator.OX1,
                     5,
                     Builders.NEAREST_NEIGHBOR);
             pm.runGenetic(config);
         }
-        System.out.println("Main.main");
-    }
-
-    public static void printStats(String filename, int runs, Builders constructiveAlgorithm, Improvers improvementAlgorithm) {
-
     }
 
     public static void savedConfigs() {

@@ -108,7 +108,7 @@ public class FileManager {
     }
 
 
-    public void outputToFile(Problem problem, GeneticAlgorithmConfig gac, ArrayList<Long> timestampsMilliseconds, ArrayList<Long> solutions, ArrayList<City> path) {
+    public void outputToFile(Problem problem, GeneticAlgorithmConfig gac, ArrayList<Long> timestampsMilliseconds, ArrayList<Long> solutions, ArrayList<City> bestSolutionPath, double bestSolution) {
 
         LongSummaryStatistics solutionsStats = new LongSummaryStatistics();
         LongSummaryStatistics timeStatsMilliseconds = new LongSummaryStatistics();
@@ -133,7 +133,7 @@ public class FileManager {
 
         outputSummary(directory, problem, gac, solutionsStats, timeStatsMilliseconds);
         outputResults(directory, solutions, timestampsMilliseconds);
-        outputPath(directory, path);
+        outputPath(directory, bestSolutionPath, bestSolution);
 
 
         System.out.println("Directory with results created at: " + directory);
@@ -168,7 +168,7 @@ public class FileManager {
             fileStream.printf("Fastest iteration: %dms %s | %ds %n", timeStats.getMin(), "\t", timeStats.getMin() / 1000);
             fileStream.printf("Avg. iteration: %.2fms %s | %.2fs %n", timeStats.getAverage(), "\t", timeStats.getAverage() / 1000);
             fileStream.println(divider);
-            fileStream.printf("Total time elapsed: %dms %s | %ds", timeStats.getSum(), "\t", timeStats.getSum() / 60);
+            fileStream.printf("Total time elapsed: %ds %s | %.2fmin", timeStats.getSum() / 1000, "\t", ((double) timeStats.getSum()) / (1000 * 60));
             fileStream.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -177,17 +177,13 @@ public class FileManager {
 
     }
 
-    private double gap(double value, double bestSolution) {
-        return ((value - bestSolution) / bestSolution) * 100;
-    }
-
 
     private void outputResults(String directory, ArrayList<Long> solutions, ArrayList<Long> timestamps) {
         try {
             PrintStream fileStream = new PrintStream(directory.concat("results.csv"));
-            fileStream.println("solutionValue,timeMilliseconds");
+            fileStream.println("iteration,solutionValue,timeMilliseconds");
             for (int i = 0; i < solutions.size() - 1; i++) {
-                fileStream.println(solutions.get(i) + "," + timestamps.get(i));
+                fileStream.println(i + 1 + "," + solutions.get(i) + "," + timestamps.get(i));
             }
             fileStream.close();
         } catch (Exception e) {
@@ -196,10 +192,10 @@ public class FileManager {
     }
 
 
-    private void outputPath(String directory, ArrayList<City> path) {
-
+    private void outputPath(String directory, ArrayList<City> path, double bestSolution) {
+        String bestSolutionString = String.format("(%.0f)", bestSolution);
         try {
-            PrintStream fileStream = new PrintStream(directory.concat("path.csv"));
+            PrintStream fileStream = new PrintStream(directory.concat(bestSolutionString + "_path.csv"));
             fileStream.println("n,x,y");
             for (int i = 0; i < path.size() - 1; i++) {
                 City c = path.get(i);
@@ -209,5 +205,9 @@ public class FileManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private double gap(double value, double bestSolution) {
+        return ((value - bestSolution) / bestSolution) * 100;
     }
 }

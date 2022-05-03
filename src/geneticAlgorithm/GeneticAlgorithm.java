@@ -17,10 +17,16 @@ public class GeneticAlgorithm extends Util {
     ArrayList<Chromosome> population = new ArrayList<>();
     ArrayList<Chromosome> parents = new ArrayList<>();
     ArrayList<Chromosome> offsprings = new ArrayList<>();
+    Chromosome currentBestSolution;
 
     private static class Chromosome implements Comparable<Chromosome> {
         public ArrayList<City> solutionPath;
         public double solution;
+
+        public Chromosome(Chromosome chromosome){
+            this.solution = chromosome.solution;
+            this.solutionPath = chromosome.solutionPath;
+        }
 
         public Chromosome(ArrayList<City> solutionPath) {
             this.solutionPath = solutionPath;
@@ -37,10 +43,11 @@ public class GeneticAlgorithm extends Util {
         this.problem = problem;
     }
 
-    public void run(){
+    public void run() {
         ArrayList<Long> timestampsMilliseconds = new ArrayList<>(gac.totalIterations);
         ArrayList<Long> solutions = new ArrayList<>(gac.totalIterations);
         generateInitialPopulation();
+        currentBestSolution = population.get(0);
 
         for (int i = 0; i < gac.totalIterations; i++) {
             double gap = ((population.get(0).solution - problem.getBestSolution()) / problem.getBestSolution()) * 100;
@@ -57,10 +64,10 @@ public class GeneticAlgorithm extends Util {
             Instant end = Instant.now();
             timestampsMilliseconds.add(Duration.between(start, end).toMillis());
             solutions.add(Math.round(population.get(0).solution));
+            if (population.get(0).solution < currentBestSolution.solution) currentBestSolution = new Chromosome(population.get(0));
         }
-        ArrayList<City> path = population.get(0).solutionPath;
         FileManager fm = new FileManager();
-        fm.outputToFile(problem, gac, timestampsMilliseconds, solutions, path);
+        fm.outputToFile(problem, gac, timestampsMilliseconds, solutions, currentBestSolution.solutionPath, currentBestSolution.solution);
     }
 
     private void generateInitialPopulation() {
@@ -71,7 +78,8 @@ public class GeneticAlgorithm extends Util {
         for (int i = 0; i < gac.populationSize; i++) {
             percent = i;
             percent = ((percent + 1) / gac.populationSize) * 100;
-            if (Math.round(percent) > Math.round(oldPercent) && Math.round(percent) % 10 == 0) System.out.printf("%02d%% ", Math.round(percent));
+            if (Math.round(percent) > Math.round(oldPercent) && Math.round(percent) % 10 == 0)
+                System.out.printf("%02d%% ", Math.round(percent));
             ArrayList<City> solutionPath = pm.buildSolution(problem, gac.constructiveAlgorithm);
             population.add(new Chromosome(solutionPath));
             oldPercent = percent;
@@ -92,6 +100,7 @@ public class GeneticAlgorithm extends Util {
      * Escolhe os cromossomos reprodutores
      */
     private void selection() {
+        parents.clear();
         switch (gac.selectionCriteria) {
             case ROULETTE:
                 selectionRoulette();
@@ -193,122 +202,122 @@ public class GeneticAlgorithm extends Util {
      * Executa o cruzamento dos reprodutores
      */
     private void crossover() {
-        switch (gac.recombinationOperator) {
-            case OX1:
-                crossoverOX1();
-                break;
-            case POS:
-                crossoverPOS();
-                break;
-            case PMX:
-                crossoverPMX();
-                break;
+
+        while (offsprings.size() < gac.populationSize) {
+            switch (gac.recombinationOperator) {
+                case OX1:
+                    crossoverOX1();
+                    break;
+                case POS:
+                    crossoverPOS();
+                    break;
+                case PMX:
+                    crossoverPMX();
+                    break;
+            }
+            selection();
         }
+
+
     }
 
     private void crossoverOX1() {
-        while (offsprings.size() < gac.populationSize) {
-            Chromosome offspringA = new Chromosome(new ArrayList<>());
-            Chromosome offspringB = new Chromosome(new ArrayList<>());
+        Chromosome offspringA = new Chromosome(new ArrayList<>());
+        Chromosome offspringB = new Chromosome(new ArrayList<>());
 
-            for (int i = 0; i < problem.getSize(); i++) {
-                offspringA.solutionPath.add(i, new City());
-                offspringB.solutionPath.add(i, new City());
-            }
-
-            int indexJ = (int) Math.round(Math.random() * (problem.getSize() - 2)) + 1; // indexJ cannot be first city, so (-1), must be inside bounds, so (-2)
-            int indexI = (int) Math.round((Math.random() * (indexJ - 1)));
-
-            for (int i = indexI; i < (indexJ + 1); i++) {
-                offspringA.solutionPath.set(i, parents.get(1).solutionPath.get(i));
-                offspringB.solutionPath.set(i, parents.get(0).solutionPath.get(i));
-            }
-            int elementsLeft = (problem.getSize() - 1) - (indexJ - indexI);
-
-            for (int i = (indexJ + 1); i < (indexJ + elementsLeft + 1); i++) {
-                City c = parents.get(1).solutionPath.get(i % problem.getSize());
-                if (!offspringA.solutionPath.subList(indexI, indexJ).contains(c)) {
-                    offspringA.solutionPath.set((i % problem.getSize()), c);
-                }
-            }
-
-            for (int i = (indexJ + 1); i < (indexJ + elementsLeft + 1); i++) {
-                City c = parents.get(0).solutionPath.get(i % problem.getSize());
-                if (!offspringB.solutionPath.subList(indexI, indexJ).contains(c)) {
-                    offspringB.solutionPath.set((i % problem.getSize()), c);
-                }
-            }
-            offspringA.solution = sumSolutionPath(offspringA.solutionPath);
-            offspringB.solution = sumSolutionPath(offspringB.solutionPath);
-
-            offsprings.add(offspringA);
-            offsprings.add(offspringB);
-
+        for (int i = 0; i < problem.getSize(); i++) {
+            offspringA.solutionPath.add(i, new City());
+            offspringB.solutionPath.add(i, new City());
         }
+
+        int indexJ = (int) Math.round(Math.random() * (problem.getSize() - 2)) + 1; // indexJ cannot be first city, so (-1), must be inside bounds, so (-2)
+        int indexI = (int) Math.round((Math.random() * (indexJ - 1)));
+
+        for (int i = indexI; i < (indexJ + 1); i++) {
+            offspringA.solutionPath.set(i, parents.get(1).solutionPath.get(i));
+            offspringB.solutionPath.set(i, parents.get(0).solutionPath.get(i));
+        }
+        int elementsLeft = (problem.getSize() - 1) - (indexJ - indexI);
+
+        for (int i = (indexJ + 1); i < (indexJ + elementsLeft + 1); i++) {
+            City c = parents.get(1).solutionPath.get(i % problem.getSize());
+            if (!offspringA.solutionPath.subList(indexI, indexJ).contains(c)) {
+                offspringA.solutionPath.set((i % problem.getSize()), c);
+            }
+        }
+
+        for (int i = (indexJ + 1); i < (indexJ + elementsLeft + 1); i++) {
+            City c = parents.get(0).solutionPath.get(i % problem.getSize());
+            if (!offspringB.solutionPath.subList(indexI, indexJ).contains(c)) {
+                offspringB.solutionPath.set((i % problem.getSize()), c);
+            }
+        }
+        offspringA.solution = sumSolutionPath(offspringA.solutionPath);
+        offspringB.solution = sumSolutionPath(offspringB.solutionPath);
+
+        offsprings.add(offspringA);
+        offsprings.add(offspringB);
+
 
     }
 
     private void crossoverPOS() {
 
-        while (offsprings.size() < gac.populationSize) {
-            int numberOfSwaps = (int) (Math.ceil(Math.random() * (problem.getSize() - 1)));
-            HashSet<Integer> swapPositions = new HashSet<>(numberOfSwaps);
-            while (swapPositions.size() < numberOfSwaps) {
-                int swapPosition = (int) (Math.round((Math.random() * (problem.getSize() - 1))));
-                swapPositions.add(swapPosition);
-            }
-
-            ArrayList<City> parentA = parents.get(0).solutionPath;
-            ArrayList<City> parentB = parents.get(1).solutionPath;
-            Chromosome offspringA = new Chromosome(parentA);
-            Chromosome offspringB = new Chromosome(parentB);
-
-            for (Integer i : swapPositions) {
-                offspringA.solutionPath.set(i, parentB.get(i));
-                offspringA.solutionPath.set(parentA.indexOf(offspringA.solutionPath.get(i)), parentA.get(i));
-
-                offspringB.solutionPath.set(i, parentA.get(i));
-                offspringB.solutionPath.set(parentB.indexOf(offspringB.solutionPath.get(i)), parentB.get(i));
-            }
-
-            offsprings.add(offspringA);
-            offsprings.add(offspringB);
+        int numberOfSwaps = (int) (Math.ceil(Math.random() * (problem.getSize() - 1)));
+        HashSet<Integer> swapPositions = new HashSet<>(numberOfSwaps);
+        while (swapPositions.size() < numberOfSwaps) {
+            int swapPosition = (int) (Math.round((Math.random() * (problem.getSize() - 1))));
+            swapPositions.add(swapPosition);
         }
+
+        ArrayList<City> parentA = parents.get(0).solutionPath;
+        ArrayList<City> parentB = parents.get(1).solutionPath;
+        Chromosome offspringA = new Chromosome(parentA);
+        Chromosome offspringB = new Chromosome(parentB);
+
+        for (Integer i : swapPositions) {
+            offspringA.solutionPath.set(i, parentB.get(i));
+            offspringA.solutionPath.set(parentA.indexOf(offspringA.solutionPath.get(i)), parentA.get(i));
+
+            offspringB.solutionPath.set(i, parentA.get(i));
+            offspringB.solutionPath.set(parentB.indexOf(offspringB.solutionPath.get(i)), parentB.get(i));
+        }
+
+        offsprings.add(offspringA);
+        offsprings.add(offspringB);
     }
 
     private void crossoverPMX() {
 
-        while (offsprings.size() < gac.populationSize) {
-            Chromosome offspringA = new Chromosome(new ArrayList<>());
-            Chromosome offspringB = new Chromosome(new ArrayList<>());
-            Map<City, City> mappingA = new HashMap<>();
-            Map<City, City> mappingB = new HashMap<>();
+        Chromosome offspringA = new Chromosome(new ArrayList<>());
+        Chromosome offspringB = new Chromosome(new ArrayList<>());
+        Map<City, City> mappingA = new HashMap<>();
+        Map<City, City> mappingB = new HashMap<>();
 
-            for (int i = 0; i < problem.getSize(); i++) {
-                offspringA.solutionPath.add(i, new City());
-                offspringB.solutionPath.add(i, new City());
-            }
-
-            int indexJ = (int) Math.round(Math.random() * (problem.getSize() - 2)) + 1; // indexJ cannot be first city, so (-1), must be inside bounds, so (-2)
-            int indexI = (int) Math.round((Math.random() * (indexJ - 1)));              //indexI cannot be indexJ, so (-1)
-
-            for (int i = indexI; i < (indexJ + 1); i++) {
-                offspringA.solutionPath.set(i, parents.get(1).solutionPath.get(i));
-                offspringB.solutionPath.set(i, parents.get(0).solutionPath.get(i));
-
-                mappingA.put(parents.get(1).solutionPath.get(i), parents.get(0).solutionPath.get(i));
-                mappingB.put(parents.get(0).solutionPath.get(i), parents.get(1).solutionPath.get(i));
-            }
-
-            sortMappedElements(offspringA, parents.get(0), mappingA, indexI, indexJ);
-            sortMappedElements(offspringB, parents.get(1), mappingB, indexI, indexJ);
-
-            offspringA.solution = sumSolutionPath(offspringA.solutionPath);
-            offspringB.solution = sumSolutionPath(offspringB.solutionPath);
-
-            offsprings.add(offspringA);
-            offsprings.add(offspringB);
+        for (int i = 0; i < problem.getSize(); i++) {
+            offspringA.solutionPath.add(i, new City());
+            offspringB.solutionPath.add(i, new City());
         }
+
+        int indexJ = (int) Math.round(Math.random() * (problem.getSize() - 2)) + 1; // indexJ cannot be first city, so (-1), must be inside bounds, so (-2)
+        int indexI = (int) Math.round((Math.random() * (indexJ - 1)));              //indexI cannot be indexJ, so (-1)
+
+        for (int i = indexI; i < (indexJ + 1); i++) {
+            offspringA.solutionPath.set(i, parents.get(1).solutionPath.get(i));
+            offspringB.solutionPath.set(i, parents.get(0).solutionPath.get(i));
+
+            mappingA.put(parents.get(1).solutionPath.get(i), parents.get(0).solutionPath.get(i));
+            mappingB.put(parents.get(0).solutionPath.get(i), parents.get(1).solutionPath.get(i));
+        }
+
+        sortMappedElements(offspringA, parents.get(0), mappingA, indexI, indexJ);
+        sortMappedElements(offspringB, parents.get(1), mappingB, indexI, indexJ);
+
+        offspringA.solution = sumSolutionPath(offspringA.solutionPath);
+        offspringB.solution = sumSolutionPath(offspringB.solutionPath);
+
+        offsprings.add(offspringA);
+        offsprings.add(offspringB);
 
 
     }
@@ -396,7 +405,7 @@ public class GeneticAlgorithm extends Util {
 
     private void updatePopulational() {
         population = offsprings;
-        Collections.sort(offsprings);
+//        Collections.sort(offsprings);
     }
 
     private void updateElitism() {
