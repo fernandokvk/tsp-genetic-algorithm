@@ -4,6 +4,7 @@ import geneticAlgorithm.GeneticAlgorithmConfig;
 import geneticAlgorithm.PopulationCriteria;
 import geneticAlgorithm.RecombinationOperator;
 import geneticAlgorithm.SelectionCriteria;
+import services.CompiledJar;
 import services.ProblemManager;
 
 import java.util.ArrayList;
@@ -13,11 +14,11 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
 
-       /* CompiledJar cj = new CompiledJar(args);
-        cj.readEntry();*/
+        CompiledJar cj = new CompiledJar(args);
+        cj.readEntry();
 
 
-        runSmallProblems();
+//        runSmallProblems();
     }
 
     public static void runSmallProblems() throws InterruptedException {
