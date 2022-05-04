@@ -63,9 +63,10 @@ public class GeneticAlgorithm extends Util {
 
             Instant end = Instant.now();
             timestampsMilliseconds.add(Duration.between(start, end).toMillis());
-            solutions.add(Math.round(population.get(0).solution));
-            if (population.get(0).solution < currentBestSolution.solution)
+            if (population.get(0).solution < currentBestSolution.solution) {
                 currentBestSolution = new Chromosome(population.get(0));
+            }
+            solutions.add(Math.round(currentBestSolution.solution));
         }
         FileManager fm = new FileManager();
         fm.outputToFile(problem, gac, timestampsMilliseconds, solutions, currentBestSolution.solutionPath, currentBestSolution.solution);

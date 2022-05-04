@@ -165,8 +165,8 @@ public class FileManager {
             fileStream.printf("Avg. GAP%%: %.2f %n", gap(solutionsStats.getAverage(), problem.getBestSolution()));
             fileStream.println(divider);
             fileStream.println("Results - Processing time");
-            fileStream.printf("Fastest iteration: %dms %s | %ds %n", timeStats.getMin(), "\t", timeStats.getMin() / 1000);
-            fileStream.printf("Avg. iteration: %.2fms %s | %.2fs %n", timeStats.getAverage(), "\t", timeStats.getAverage() / 1000);
+            fileStream.printf("Fastest generation: %dms %s | %ds %n", timeStats.getMin(), "\t", timeStats.getMin() / 1000);
+            fileStream.printf("Avg. generation: %.2fms %s | %.2fs %n", timeStats.getAverage(), "\t", timeStats.getAverage() / 1000);
             fileStream.println(divider);
             fileStream.printf("Total time elapsed: %ds %s | %.2fmin%n", timeStats.getSum() / 1000, "\t", ((double) timeStats.getSum()) / (1000 * 60));
             fileStream.printf("Threads used: %d", gac.threads);
@@ -182,7 +182,7 @@ public class FileManager {
     private void outputResults(String directory, ArrayList<Long> solutions, ArrayList<Long> timestamps) {
         try {
             PrintStream fileStream = new PrintStream(directory.concat("results.csv"));
-            fileStream.println("iteration,solutionValue,timeMilliseconds");
+            fileStream.println("generation,solutionValue,timeMilliseconds");
             for (int i = 0; i < solutions.size() - 1; i++) {
                 fileStream.println(i + 1 + "," + solutions.get(i) + "," + timestamps.get(i));
             }
