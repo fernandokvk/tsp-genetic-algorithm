@@ -162,7 +162,7 @@ public class FileManager {
             fileStream.println("Avg. solution: " + solutionsStats.getAverage());
             fileStream.println("Worst solution: " + solutionsStats.getMax());
             fileStream.printf("Best GAP%%: %.2f %n", gap(solutionsStats.getMin(), problem.getBestSolution()));
-            fileStream.printf("Avg. GAP%%: %.2f %n", gap(solutionsStats.getAverage(), problem.getBestSolution()));
+//            fileStream.printf("Avg. GAP%%: %.2f %n", gap(solutionsStats.getAverage(), problem.getBestSolution()));
             fileStream.println(divider);
             fileStream.println("Results - Processing time");
             fileStream.printf("Fastest generation: %dms %s | %ds %n", timeStats.getMin(), "\t", timeStats.getMin() / 1000);

@@ -48,25 +48,29 @@ public class GeneticAlgorithm extends Util {
         ArrayList<Long> solutions = new ArrayList<>(gac.totalIterations);
         generateInitialPopulation();
         currentBestSolution = population.get(0);
-
+        Instant overallStart = Instant.now();
+        Instant end = Instant.now();
         for (int i = 0; i < gac.totalIterations; i++) {
-            double gap = ((population.get(0).solution - problem.getBestSolution()) / problem.getBestSolution()) * 100;
-            System.out.printf("%.2f - Generation: %d - Gap: %.2f%% \n", population.get(0).solution, i + 1, gap);
-            Instant start = Instant.now();
+            if (Duration.between(overallStart, end).toMinutes() < gac.timeLimit){
+                double gap = ((population.get(0).solution - problem.getBestSolution()) / problem.getBestSolution()) * 100;
+                double bestGap = ((currentBestSolution.solution - problem.getBestSolution()) / problem.getBestSolution()) * 100;
+                System.out.printf("%.2f - Generation: %d - Best Gap: %.2f%% - Gap: %.2f%%\n", population.get(0).solution, i + 1, bestGap, gap);
+                Instant start = Instant.now();
 
-            evaluation();
-            selection();
-            crossover();
-            mutation();
-            localSearch();
-            update();
+                evaluation();
+                selection();
+                crossover();
+                mutation();
+                localSearch();
+                update();
 
-            Instant end = Instant.now();
-            timestampsMilliseconds.add(Duration.between(start, end).toMillis());
-            if (population.get(0).solution < currentBestSolution.solution) {
-                currentBestSolution = new Chromosome(population.get(0));
+                end = Instant.now();
+                timestampsMilliseconds.add(Duration.between(start, end).toMillis());
+                if (population.get(0).solution < currentBestSolution.solution) {
+                    currentBestSolution = new Chromosome(population.get(0));
+                }
+                solutions.add(Math.round(currentBestSolution.solution));
             }
-            solutions.add(Math.round(currentBestSolution.solution));
         }
         FileManager fm = new FileManager();
         fm.outputToFile(problem, gac, timestampsMilliseconds, solutions, currentBestSolution.solutionPath, currentBestSolution.solution);
@@ -348,12 +352,9 @@ public class GeneticAlgorithm extends Util {
     }
 
     private void mutate(Chromosome c) {
-
         int j = (int) Math.round(Math.random() * (problem.getSize() - 2)) + 1;
         int i = (int) Math.round((Math.random() * (j - 1)));
         Collections.reverse(c.solutionPath.subList(i, j + 1));
-
-
     }
 
     /**

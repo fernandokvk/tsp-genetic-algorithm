@@ -16,6 +16,7 @@ public class GeneticAlgorithmConfig {
     public Builders constructiveAlgorithm = Builders.NEAREST_NEIGHBOR;
     public Improvers improvementAlgorithm = Improvers.OPT2_FIRST_IMPROVEMENT;
     public int threads = 1;
+    public long timeLimit = 1;
 
     public GeneticAlgorithmConfig(int populationSize, int totalIterations, SelectionCriteria selectionCriteria, PopulationCriteria populationCriteria, int elitismPercent, RecombinationOperator recombinationOperator, int mutationRate, Builders constructiveAlgorithm, Improvers improvementAlgorithm) {
         this.populationSize = populationSize;

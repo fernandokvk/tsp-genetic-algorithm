@@ -4,7 +4,6 @@ import geneticAlgorithm.GeneticAlgorithmConfig;
 import geneticAlgorithm.PopulationCriteria;
 import geneticAlgorithm.RecombinationOperator;
 import geneticAlgorithm.SelectionCriteria;
-import services.CompiledJar;
 import services.ProblemManager;
 
 import java.util.ArrayList;
@@ -14,52 +13,54 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
 
-        CompiledJar cj = new CompiledJar(args);
-        cj.readEntry();
+  /*      CompiledJar cj = new CompiledJar(args);
+        cj.readEntry();*/
 
 
-//        runSmallProblems();
+        runRequiredProblems();
     }
 
-    public static void runSmallProblems() throws InterruptedException {
-        List<ProblemManager> smallProblems = new ArrayList<>();
-        GeneticAlgorithmConfig smallConfigOX1 = new GeneticAlgorithmConfig(
+
+    public static void runRequiredProblems() throws InterruptedException{
+        List<ProblemManager> problems = new ArrayList<>();
+        GeneticAlgorithmConfig OX1 = new GeneticAlgorithmConfig(
+                200,
                 1000,
-                10000,
                 RecombinationOperator.OX1,
-                5,
+                1,
                 Builders.NEAREST_NEIGHBOR,
                 10);
-        GeneticAlgorithmConfig smallConfigPOS = new GeneticAlgorithmConfig(
-                1000,
-                50000,
-                RecombinationOperator.POS,
-                5,
+        GeneticAlgorithmConfig PMX = new GeneticAlgorithmConfig(
+                200,
+                10000,
+                RecombinationOperator.PMX,
+                1,
                 Builders.NEAREST_NEIGHBOR,
                 10);
-        ProblemManager p1 = new ProblemManager("att48.tsp");
-        ProblemManager p2 = new ProblemManager("eil101.tsp");
-        ProblemManager p3 = new ProblemManager("kroA150.tsp");
-        ProblemManager p4 = new ProblemManager("gil262.tsp");
-        ProblemManager p5 = new ProblemManager("a280.tsp");
-        ProblemManager p6 = new ProblemManager("lin318.tsp");
-        ProblemManager p7 = new ProblemManager("pr439.tsp");
-        ProblemManager p8 = new ProblemManager("rat575.tsp");
-        ProblemManager p9 = new ProblemManager("rat783.tsp");
-        smallProblems.add(p1);
-        smallProblems.add(p2);
-        smallProblems.add(p3);
-        smallProblems.add(p4);
-        smallProblems.add(p5);
-        smallProblems.add(p6);
-        smallProblems.add(p7);
-        smallProblems.add(p8);
-        smallProblems.add(p9);
-        for (ProblemManager p: smallProblems){
-            p.runGenetic(smallConfigOX1);
-        } for (ProblemManager p: smallProblems){
-            p.runGenetic(smallConfigPOS);
+
+        ProblemManager p1 = new ProblemManager("pr1002.tsp");
+        ProblemManager p2 = new ProblemManager("fnl4461.tsp");
+        ProblemManager p3 = new ProblemManager("pla7397.tsp");
+        ProblemManager p4 = new ProblemManager("brd14051.tsp");
+        ProblemManager p5 = new ProblemManager("d15112.tsp");
+        ProblemManager p6 = new ProblemManager("d18512.tsp");
+        ProblemManager p7 = new ProblemManager("pla33810.tsp");
+        ProblemManager p8 = new ProblemManager("pla85900.tsp");
+        problems.add(p1);
+        problems.add(p2);
+        problems.add(p3);
+        problems.add(p4);
+        problems.add(p5);
+        problems.add(p6);
+        problems.add(p7);
+        problems.add(p8);
+        for (ProblemManager p: problems){
+            p.runGenetic(OX1);
+        } for (ProblemManager p: problems){
+            p.runGenetic(PMX);
         }
+
+
     }
 
     public static void savedConfigs() {
